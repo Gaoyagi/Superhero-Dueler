@@ -8,7 +8,7 @@ import random
 
 
 def capture_console_output(function_body):
-    # _io.StringIO object
+    #_io.StringIO object
     string_io = io.StringIO()
     sys.stdout = string_io
     function_body()
@@ -269,7 +269,7 @@ def test_team_remove_hero():
     jodie = superhero.Hero("Jodie Foster")
     team.add_hero(jodie)
     assert team.heroes[0].name == "Jodie Foster"
-    team.remove_hero("Jodie Foster")
+    team.remove_hero("Jodie Foster") == 1
     assert len(team.heroes) == 0
 
 
@@ -293,7 +293,7 @@ def test_print_heroes():
     team.add_hero(jodie)
     athena = superhero.Hero("Athena")
     team.add_hero(athena)
-    output_string = capture_console_output(team.view_all_heroes)
+    output_string = capture_console_output(team.view_all_heroes())
 
     assert "Jodie Foster" in output_string
     assert "Athena" in output_string

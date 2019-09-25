@@ -116,6 +116,8 @@ class Team(object):
     def __init__(self, name):
         self.name = name
         self.heroes = []
+        self.total_kills = 0
+        self.total_deaths = 0
 
     def add_hero(self, name):
         self.heroes.append(name)
@@ -151,7 +153,7 @@ class Team(object):
 
     def stats(self):
         for hero in self.heroes:
-            print(f"{hero.name} has a K/D of {hero.kills}/{hero.deaths}")
+            print(f"{hero.name} has a K/D of {hero.kills}")
 
 
 #arena Class
@@ -219,10 +221,46 @@ class Arena(object):
         return yes_no
     
     def build_team_one(self):
-        pass
+        name = input("what would you like to name team 1? ")
+        self.team_one = Team(name)
+        mates = input("how many team members do you want? ")
+        for x in range(0, mates):
+            self.team_one.heroes[x] = self.create_hero()
     
     def build_team_two(self):
-        pass
+        name = input("what would you like to name team 2? ")
+        self.team_two = Team(name)
+        mates = input("how many team members do you want? ")
+        for x in range(0, mates):
+            self.team_two.heroes[x] = self.create_hero()
+
+    def team_battle(self):
+        return self.team_one.attack(self.team_two)
+    
+    def show_stats(self):
+        team_one_kills = 0
+        team_one_deaths = 0
+        team_two_kills = 0
+        team_two_deaths = 0
+        win = 0
+        for hero in self.team_one.heroes:
+            if hero.current_health > 0:
+                print(hero.name)
+                win = 1
+            team_one_kills += hero.kills
+            team_one_deaths += hero.deaths
+        for hero in self.team_two.heroes:
+            if hero.current_health > 0:
+                print(hero.name)
+                win = 2
+            team_two_kills += hero.kills
+            team_two_deaths += hero.deaths
+        print(f"The Winner is team {win}")
+
+        avgOne = self.team_one.total_kills//self.team_one.total_deaths
+        avgTwo = self.team_two.total_kills//self.team_two.total_deaths
+        print("team one's avg K/D is: " + avgOne)
+        print("team two's avg K/D is: " + avgTwo)
 
 
 if __name__ == "__main__":

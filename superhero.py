@@ -38,7 +38,7 @@ class Hero(object):
     #activates all armors and tallies up defense
     #params:none
     #return: total defense
-    def defend(self, incoming_damage):
+    def defend(self):
         defense = 0
         for armor in self.armors:
             defense += armor.block()
@@ -48,7 +48,7 @@ class Hero(object):
     #params: incoming damage
     #return: none
     def take_damage(self, damage):
-        taken_damage = damage - self.defend(damage)
+        taken_damage = damage - self.defend()   
         self.current_health -= taken_damage
     
     #checks to see if your health is 0
@@ -64,7 +64,7 @@ class Hero(object):
     #param: opponent hero object
     #return: none
     def fight(self, opponent):
-        while(self.current_health>0 and opponent.current_health>0):
+        while(self.current_health > 0 and opponent.current_health > 0):
             opponent.take_damage(self.attack())
             self.take_damage(opponent.attack())
         if self.current_health > 0:
@@ -135,14 +135,18 @@ class Team(object):
         for hero in self.heroes:
             print(hero.name)
 
+    #has the two teams attack each other until one team "dies"
+    #shuffles the order of each team and then has them fight one at a time
+    #params: enemy team object
+    #return none
     def attack(self, other_team):
         random.shuffle(self.heroes)
         random.shuffle(other_team.heroes)
         teamCount = 0
         enemyCount = 0
-        while(teamCount != len(self.heroes) and enemyCount != len(other_team.heroes)):
+        while teamCount != len(self.heroes) and enemyCount != len(other_team.heroes):
             self.heroes[teamCount].fight(other_team.heroes[enemyCount])
-            if(self.heroes[teamCount].current_health == 0):
+            if self.heroes[teamCount].current_health == 0:
                 teamCount+=1
             else:
                 enemyCount+=1
@@ -223,15 +227,15 @@ class Arena(object):
     def build_team_one(self):
         name = input("what would you like to name team 1? ")
         self.team_one = Team(name)
-        mates = input("how many team members do you want? ")
-        for x in range(0, mates):
+        mates = int(input("how many team members do you want? "))
+        for x in range(mates):
             self.team_one.heroes[x] = self.create_hero()
     
     def build_team_two(self):
         name = input("what would you like to name team 2? ")
         self.team_two = Team(name)
-        mates = input("how many team members do you want? ")
-        for x in range(0, mates):
+        mates = int(input("how many team members do you want? "))
+        for x in range(mates):
             self.team_two.heroes[x] = self.create_hero()
 
     def team_battle(self):
@@ -264,17 +268,8 @@ class Arena(object):
 
 
 if __name__ == "__main__":
-    # If you run this file from the terminal
-    # this block is executed.
-
-    hero1 = Hero("Wonder Woman")
-    hero2 = Hero("Dumbledore")
-    ability1 = Ability("Super Speed", 300)
-    ability2 = Ability("Super Eyes", 130)
-    ability3 = Ability("Wizard Wand", 80)
-    ability4 = Ability("Wizard Beard", 20)
-    hero1.add_ability(ability1)
-    hero1.add_ability(ability2)
-    hero2.add_ability(ability3)
-    hero2.add_ability(ability4)
-    hero1.fight(hero2)
+    arena = Arena()
+    arena.build_team_one()
+    arena.build_team_two()
+    arena.team_battle()
+    arena.show_stats()

@@ -23,6 +23,9 @@ class Hero(object):
     def add_armor(self, armor):
         self.armors.append(armor)
 
+    #adds a new weapon object to heroes list of abilities
+    #param: new weapon object
+    #return none
     def add_weapon(self, weapon):
         self.abilities.append(weapon)
 
@@ -68,14 +71,14 @@ class Hero(object):
             opponent.take_damage(self.attack())
             self.take_damage(opponent.attack())
         if self.current_health > 0:
-            print(self.name + " won!")
+            print(self.name + " beat " + opponent.name)
             self.add_kills(1)
             opponent.add_deaths(1)
         else:
-            print(opponent.name + " won!")
+            print(opponent.name + " beat " + self.name)
             self.add_deaths(1)
             opponent.add_kills(1)
-
+           
     def add_kills(self, num_kills):
         self.kills += num_kills
     
@@ -89,7 +92,7 @@ class Ability(object):
         self.max_damage = max_damage
 
     def attack(self):
-        return random.randint(0, self.max_damage)
+        return random.randint(0, int(self.max_damage))
 
 
 #weapon Class
@@ -99,7 +102,7 @@ class Weapon(Ability):
         self.name = name
 
     def attack(self):
-        return random.randint(self.max_damage // 2, self.max_damage)
+        return random.randint(int(self.max_damage) // 2, int(self.max_damage))
 
 
 #Armor Class
@@ -146,7 +149,7 @@ class Team(object):
         enemyCount = 0
         while teamCount != len(self.heroes) and enemyCount != len(other_team.heroes):
             self.heroes[teamCount].fight(other_team.heroes[enemyCount])
-            if self.heroes[teamCount].current_health == 0:
+            if self.heroes[teamCount].current_health <= 0:
                 teamCount+=1
             else:
                 enemyCount+=1
@@ -172,6 +175,7 @@ class Arena(object):
     def create_ability(self):
         name = input("What is the ability called? ")
         damage = input("how much damage does it do? ")
+        damage = self.validNum(damage)
         return Ability(name, damage)
 
     #creates new weapon object
@@ -180,6 +184,7 @@ class Arena(object):
     def create_weapon(self):
         name = input("What is the weapon called? ")
         damage = input("how much damage does it do? ")
+        damage = self.validNum(damage)
         return Weapon(name, damage)
 
     #creates new armor object
@@ -188,6 +193,7 @@ class Arena(object):
     def create_armor(self):
         name = input("What is the armor called? ")
         block = input("how much damage does it block? ")
+        block = self.validNum(block)
         return Armor(name, block)
     
     #creates new hero object and then adds weapons, armor, and abilites to the hero at the users request
@@ -195,7 +201,8 @@ class Arena(object):
     #return: new hero object
     def create_hero(self):
         name = input("what is the name of the hero? ")
-        health = int(input("how much health does this hero have? "))
+        health = input("how much health does this hero have? ")
+        health = self.validNum(health)
         neo = Hero(name, health)
         while self.validAnswer("ability"):
             neo.add_ability(self.create_ability())
@@ -205,15 +212,15 @@ class Arena(object):
             neo.add_armor(self.create_armor())
         return neo
                 
-    #function meant to make sure the user input to add is a valid answer
+    #function meant to make sure the user input to add is a valid answer to yes no questions
     #parameter: w/e the user wants to add to the hero
     #return: True or False depending if the user wants to continue adding
     def validAnswer(self, item):
-        response = input(f"would you like to add a(n) {item}? (y/n): ")
-        response.lower()
         yes_no = True
         valid = False
         while not valid:
+            response = input(f"would you like to add a(n) {item}? (y/n): ")
+            response.lower()
             if response == "n":
                 yes_no = False
                 valid = True
@@ -223,23 +230,36 @@ class Arena(object):
             else:
                 print("Invalid choice")
         return yes_no
+
+    def validNum(self, ans):
+        invalid = True
+        while invalid:
+            try:
+                ans = int(ans)
+            except:
+                ans = input("please enter a valid number: ")  
+            else:
+                invalid = False
+        return ans
     
     def build_team_one(self):
         name = input("what would you like to name team 1? ")
         self.team_one = Team(name)
-        mates = int(input("how many team members do you want? "))
+        mates = input("how many team members do you want? ")
+        mates = self.validNum(mates)
         for x in range(mates):
-            self.team_one.heroes[x] = self.create_hero()
+            self.team_one.heroes.append(self.create_hero())
     
     def build_team_two(self):
         name = input("what would you like to name team 2? ")
         self.team_two = Team(name)
-        mates = int(input("how many team members do you want? "))
+        mates = input("how many team members do you want? ")
+        mates = self.validNum(mates)
         for x in range(mates):
-            self.team_two.heroes[x] = self.create_hero()
+            self.team_two.heroes.append(self.create_hero())
 
     def team_battle(self):
-        return self.team_one.attack(self.team_two)
+        self.team_one.attack(self.team_two)
     
     def show_stats(self):
         team_one_kills = 0
@@ -261,15 +281,38 @@ class Arena(object):
             team_two_deaths += hero.deaths
         print(f"The Winner is team {win}")
 
-        avgOne = self.team_one.total_kills//self.team_one.total_deaths
-        avgTwo = self.team_two.total_kills//self.team_two.total_deaths
-        print("team one's avg K/D is: " + avgOne)
-        print("team two's avg K/D is: " + avgTwo)
+        avgOne = team_one_kills
+        if team_one_deaths > 0:
+            avgOne = avgOne//team_one_deaths
+
+        avgTwo = team_two_kills
+        if self.team_two.total_deaths > 0:
+            avgTwo = avgTwo//team_two_deaths    
+        print(f"team one's avg K/D is: {avgOne}")
+        print(f"team two's avg K/D is: {avgTwo}")
 
 
 if __name__ == "__main__":
+    game_is_running = True
+
+    # Instantiate Game Arena
     arena = Arena()
+
+    #Build Teams
     arena.build_team_one()
     arena.build_team_two()
-    arena.team_battle()
-    arena.show_stats()
+
+    while game_is_running:
+
+        arena.team_battle()
+        arena.show_stats()
+        play_again = input("Play Again? Y or N: ")
+
+        #Check for Player Input
+        if play_again.lower() == "n":
+            game_is_running = False
+
+        else:
+            #Revive heroes to play again
+            arena.team_one.revive_heroes()
+            arena.team_two.revive_heroes()

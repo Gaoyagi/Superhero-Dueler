@@ -1,5 +1,30 @@
 import random
 
+#Ability class
+class Ability(object):
+    def __init__(self, name, max_damage):
+        self.name = name
+        self.max_damage = max_damage
+
+    def attack(self):
+        return random.randint(0, int(self.max_damage))
+
+
+#weapon Class
+class Weapon(Ability): 
+    def attack(self):
+        return random.randint(int(self.max_damage) // 2, int(self.max_damage))
+
+
+#Armor Class
+class Armor(object):
+    def __init__(self, name, max_block):
+        self.name = name
+        self.max_block = max_block
+    def block(self):
+        return random.randint(0, self.max_block) 
+
+
 #hero class
 class Hero(object):
     def __init__(self, name, starting_health = 100):
@@ -69,6 +94,7 @@ class Hero(object):
     def fight(self, opponent):
         if len(self.abilities) == 0 and len(opponent.abilities) == 0:
             print(f"{self.name} and {opponent.name} had a draw")
+            return
         while(self.current_health > 0 and opponent.current_health > 0):
             opponent.take_damage(self.attack())
             self.take_damage(opponent.attack())
@@ -87,29 +113,7 @@ class Hero(object):
     def add_deaths(self, num_deaths):
         self.deaths += num_deaths
 
-#Ability class
-class Ability(object):
-    def __init__(self, name, max_damage):
-        self.name = name
-        self.max_damage = max_damage
 
-    def attack(self):
-        return random.randint(0, int(self.max_damage))
-
-
-#weapon Class
-class Weapon(Ability): 
-    def attack(self):
-        return random.randint(int(self.max_damage) // 2, int(self.max_damage))
-
-
-#Armor Class
-class Armor(object):
-    def __init__(self, name, max_block):
-        self.name = name
-        self.max_block = max_block
-    def block(self):
-        return random.randint(0, self.max_block) 
 
 
 #Team Class
@@ -163,7 +167,15 @@ class Team(object):
 
     def stats(self):
         for hero in self.heroes:
-            print(f"{hero.name} has a K/D of {hero.kills}")
+            self.total_kills+=hero.kills
+            self.total_deaths+=hero.deaths
+            hero.kills = 0
+            hero.deaths = 0
+        for hero in self.dead:
+            self.total_kills+=hero.kills
+            self.total_deaths+=hero.deaths
+            hero.kills = 0
+            hero.deaths = 0
 
 
 #arena Class
@@ -265,40 +277,22 @@ class Arena(object):
         self.team_one.attack(self.team_two)
     
     def show_stats(self):
-        team_one_kills = 0
-        team_one_deaths = 0
-        team_two_kills = 0
-        team_two_deaths = 0
+        self.team_one.stats()
+        self.team_two.stats()
         if(len(self.team_two.heroes) == 0):
             print(f"the winner is team {self.team_one.name}!")
             print("the survivors are: ")
             for hero in self.team_one.heroes:
                 print(hero.name)
-                team_one_kills += hero.kills
-                team_one_deaths += hero.deaths
-            for hero in self.team_one.dead:
-                team_one_kills += hero.kills
-                team_one_deaths += hero.deaths
         else:
-            print(f"the winner is team {self.team_one.name}!")
+            print(f"the winner is team {self.team_two.name}!")
             print("the survivors are: ")
             for hero in self.team_two.heroes:
                 print(hero.name)
-                team_two_kills += hero.kills
-                team_two_deaths += hero.deaths
-            for hero in self.team_two.dead:
-                team_two_kills += hero.kills
-                team_two_deaths += hero.deaths
 
-        avgOne = team_one_kills
-        if team_one_deaths > 0:
-            avgOne = avgOne//team_one_deaths
-
-        avgTwo = team_two_kills
-        if self.team_two.total_deaths > 0:
-            avgTwo = avgTwo//team_two_deaths    
-        print(f"team one's avg K/D is: {avgOne}")
-        print(f"team two's avg K/D is: {avgTwo}")
+        print(f"team one's avg K/D is: {self.team_one.total_kills}/{self.team_one.total_deaths}")
+        print(f"team two's avg K/D is: {self.team_two.total_kills}/{self.team_two.total_deaths}")    
+       
 
 
 if __name__ == "__main__":
@@ -325,3 +319,5 @@ if __name__ == "__main__":
             #Revive heroes to play again
             arena.team_one.revive_heroes()
             arena.team_two.revive_heroes()  
+        
+    

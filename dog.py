@@ -4,6 +4,6 @@ class Dog(Animal):
         self.name = name
         self.breed = breed
 
-    def wook(self):
+    def woof(self):
         print("woof")
 

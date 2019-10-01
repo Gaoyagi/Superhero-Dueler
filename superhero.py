@@ -67,13 +67,15 @@ class Hero(object):
     #param: opponent hero object
     #return: none
     def fight(self, opponent):
+        if len(self.abilities) == 0 and len(opponent.abilities) == 0:
+            print(f"{self.name} and {opponent.name} had a draw")
         while(self.current_health > 0 and opponent.current_health > 0):
             opponent.take_damage(self.attack())
             self.take_damage(opponent.attack())
         if self.current_health > 0:
             print(self.name + " beat " + opponent.name)
             self.add_kills(1)
-            opponent.add_deaths(1)
+            opponent.add_deaths(1)  
         else:
             print(opponent.name + " beat " + self.name)
             self.add_deaths(1)
@@ -97,10 +99,6 @@ class Ability(object):
 
 #weapon Class
 class Weapon(Ability): 
-    def __init__(self, name, max_damage):
-        self.max_damage = max_damage
-        self.name = name
-
     def attack(self):
         return random.randint(int(self.max_damage) // 2, int(self.max_damage))
 
@@ -119,8 +117,10 @@ class Team(object):
     def __init__(self, name):
         self.name = name
         self.heroes = []
+        self.dead = []
         self.total_kills = 0
         self.total_deaths = 0
+        self.alive = True
 
     def add_hero(self, name):
         self.heroes.append(name)
@@ -128,7 +128,8 @@ class Team(object):
     def remove_hero(self, name):
         found = False
         for hero in self.heroes:
-            if(hero.name == name):
+            if(hero.name == name):  
+                self.dead.append(hero)
                 self.heroes.remove(hero)   
                 found = True    
         if not found:        
@@ -139,24 +140,26 @@ class Team(object):
             print(hero.name)
 
     #has the two teams attack each other until one team "dies"
-    #shuffles the order of each team and then has them fight one at a time
     #params: enemy team object
     #return none
     def attack(self, other_team):
-        random.shuffle(self.heroes)
-        random.shuffle(other_team.heroes)
-        teamCount = 0
-        enemyCount = 0
-        while teamCount != len(self.heroes) and enemyCount != len(other_team.heroes):
-            self.heroes[teamCount].fight(other_team.heroes[enemyCount])
-            if self.heroes[teamCount].current_health <= 0:
-                teamCount+=1
-            else:
-                enemyCount+=1
+        while len(self.heroes) != 0 and len(other_team.heroes) != 0:
+            random.shuffle(self.heroes)
+            random.shuffle(other_team.heroes)
+            self.heroes[0].fight(other_team.heroes[0])
+            if self.heroes[0].current_health <= 0:
+                self.dead.append(self.heroes.pop(0))
+            elif other_team.heroes[0].current_health <= 0:
+                other_team.dead.append(other_team.heroes.pop(0))
 
+    #goes through the team's list of dead, "revives" them and then readding them to the live hero list
+    #params: health??
+    #return: none 
     def revive_heroes(self, health=100):
-        for hero in self.heroes:
-            hero.current_health = hero.starting_health
+        for i in range(len(self.dead)):
+            self.dead[0].current_health = self.dead[0].starting_health
+            self.heroes.append(self.dead[0])
+            self.dead.remove(self.dead[0])
 
     def stats(self):
         for hero in self.heroes:
@@ -266,20 +269,26 @@ class Arena(object):
         team_one_deaths = 0
         team_two_kills = 0
         team_two_deaths = 0
-        win = 0
-        for hero in self.team_one.heroes:
-            if hero.current_health > 0:
+        if(len(self.team_two.heroes) == 0):
+            print(f"the winner is team {self.team_one.name}!")
+            print("the survivors are: ")
+            for hero in self.team_one.heroes:
                 print(hero.name)
-                win = 1
-            team_one_kills += hero.kills
-            team_one_deaths += hero.deaths
-        for hero in self.team_two.heroes:
-            if hero.current_health > 0:
+                team_one_kills += hero.kills
+                team_one_deaths += hero.deaths
+            for hero in self.team_one.dead:
+                team_one_kills += hero.kills
+                team_one_deaths += hero.deaths
+        else:
+            print(f"the winner is team {self.team_one.name}!")
+            print("the survivors are: ")
+            for hero in self.team_two.heroes:
                 print(hero.name)
-                win = 2
-            team_two_kills += hero.kills
-            team_two_deaths += hero.deaths
-        print(f"The Winner is team {win}")
+                team_two_kills += hero.kills
+                team_two_deaths += hero.deaths
+            for hero in self.team_two.dead:
+                team_two_kills += hero.kills
+                team_two_deaths += hero.deaths
 
         avgOne = team_one_kills
         if team_one_deaths > 0:
@@ -315,4 +324,4 @@ if __name__ == "__main__":
         else:
             #Revive heroes to play again
             arena.team_one.revive_heroes()
-            arena.team_two.revive_heroes()
+            arena.team_two.revive_heroes()  

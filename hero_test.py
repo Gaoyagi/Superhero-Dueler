@@ -1,3 +1,4 @@
+import pytest
 import io
 import sys
 import superhero
@@ -293,7 +294,7 @@ def test_print_heroes():
     team.add_hero(jodie)
     athena = superhero.Hero("Athena")
     team.add_hero(athena)
-    output_string = capture_console_output(team.view_all_heroes())
+    output_string = capture_console_output(team.view_all_heroes)
 
     assert "Jodie Foster" in output_string
     assert "Athena" in output_string
